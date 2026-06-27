@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <style>
+        /* Modern Dark Theme UI */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #0f172a; /* Slate-900 */
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        /* Loading Spinner */
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #334155;
+            border-top: 4px solid #3b82f6; /* Blue-500 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            font-size: 1.125rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .error {
+            color: #ef4444; /* Red-500 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="loader" class="spinner"></div>
+        <div id="statusMessage" class="message">Loading your content...</div>
+    </div>
+
+    <script>
+        // 1. Yahan apna Main URL define karein (JS ke andar)
+        const MAIN_URL = "https://ascinemaa.fun/watch?src=";
+
+        // 2. Current URL se query parameters fetch karna
+        const urlParams = new URLSearchParams(window.location.search);
+        const srcBase64 = urlParams.get('src');
+
+        const statusMessage = document.getElementById('statusMessage');
+        const loader = document.getElementById('loader');
+
+        // Optional: 1 second ka timeout diya hai taaki smooth loading animation dikhe.
+        // Instant redirect ke liye 'setTimeout' hata kar direct logic use kar sakte hain.
+        setTimeout(() => {
+            if (srcBase64) {
+                statusMessage.innerText = "Redirecting...";
+                
+                // Base URL aur Base64 ko combine karke final URL banana
+                const finalDestination = MAIN_URL + srcBase64;
+                
+                // Redirect user
+                window.location.replace(finalDestination);
+            } else {
+                // Agar URL mein ?src= missing hai to error show karega
+                loader.style.display = 'none';
+                statusMessage.classList.add('error');
+                statusMessage.innerText = "Error: Link is broken or missing valid parameters.";
+            }
+        }, 1000); 
+    </script>
+</body>
+</html>
