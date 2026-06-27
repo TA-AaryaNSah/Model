@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+    <title>Verify to Continue</title>
+    
+    <!-- Google reCAPTCHA Script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
     <style>
         /* Modern Dark Theme UI */
         body {
@@ -19,6 +23,10 @@
         }
         .container {
             text-align: center;
+            background: #1e293b; /* Slightly lighter dark for card */
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
         }
         /* Loading Spinner */
         .spinner {
@@ -29,6 +37,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px auto;
+            display: none; /* Initially hidden, shows after captcha */
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -37,10 +46,16 @@
         .message {
             font-size: 1.125rem;
             font-weight: 500;
-            letter-spacing: 0.5px;
+            margin-bottom: 20px;
         }
         .error {
             color: #ef4444; /* Red-500 */
+        }
+        /* Captcha Center Alignment */
+        .recaptcha-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -48,11 +63,19 @@
 
     <div class="container">
         <div id="loader" class="spinner"></div>
-        <div id="statusMessage" class="message">Loading your content...</div>
+        <div id="statusMessage" class="message">Please verify you are human to continue.</div>
+        
+        <!-- Google reCAPTCHA Box -->
+        <div id="captchaBox" class="recaptcha-wrapper">
+            <div class="g-recaptcha" 
+                 data-sitekey="6LeHbDgtAAAAAHzhZ-6CpEARRGmTLVs0GBFGN2DQ" 
+                 data-callback="onCaptchaSuccess">
+            </div>
+        </div>
     </div>
 
     <script>
-        // 1. Yahan apna Main URL define karein (JS ke andar)
+        // 1. Aapka Main URL
         const MAIN_URL = "https://ascinemaa.fun/watch?src=";
 
         // 2. Current URL se query parameters fetch karna
@@ -61,25 +84,32 @@
 
         const statusMessage = document.getElementById('statusMessage');
         const loader = document.getElementById('loader');
+        const captchaBox = document.getElementById('captchaBox');
 
-        // Optional: 1 second ka timeout diya hai taaki smooth loading animation dikhe.
-        // Instant redirect ke liye 'setTimeout' hata kar direct logic use kar sakte hain.
-        setTimeout(() => {
+        // Agar URL mein ?src= missing hai, to pehle hi error dikha do aur Captcha hata do
+        if (!srcBase64) {
+            captchaBox.style.display = 'none';
+            statusMessage.classList.add('error');
+            statusMessage.innerText = "Error: Link is broken or missing valid parameters.";
+        }
+
+        // 3. Jab User Captcha successfully solve kar dega tab yeh function run hoga
+        function onCaptchaSuccess(token) {
             if (srcBase64) {
-                statusMessage.innerText = "Redirecting...";
+                // Captcha box ko hide karo aur Loading Spinner show karo
+                captchaBox.style.display = 'none';
+                loader.style.display = 'block';
+                statusMessage.innerText = "Verification successful! Redirecting...";
                 
-                // Base URL aur Base64 ko combine karke final URL banana
+                // Final URL generate karna
                 const finalDestination = MAIN_URL + srcBase64;
                 
-                // Redirect user
-                window.location.replace(finalDestination);
-            } else {
-                // Agar URL mein ?src= missing hai to error show karega
-                loader.style.display = 'none';
-                statusMessage.classList.add('error');
-                statusMessage.innerText = "Error: Link is broken or missing valid parameters.";
+                // 1 second delay ke baad Redirect karna taaki smooth transition ho
+                setTimeout(() => {
+                    window.location.replace(finalDestination);
+                }, 1000);
             }
-        }, 1000); 
+        }
     </script>
 </body>
 </html>
